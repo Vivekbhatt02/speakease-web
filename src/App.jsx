@@ -1,12 +1,12 @@
-import './App.css'
+import {BrowserRouter} from "react-router-dom";
+import AppRoutes from "./routes";
 
 function App() {
-
-  return (
-    <>
-      <h1>speakease-app</h1>
-    </>
-  )
+    return (
+      <BrowserRouter>
+          <AppRoutes/>
+      </BrowserRouter>
+    );
 }
 
-export default App
+export default App;
