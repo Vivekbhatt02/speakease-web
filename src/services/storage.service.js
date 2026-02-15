@@ -1,17 +1,37 @@
-const STORAGE_KEY = 'speakease_phrases';
+import {DEFAULT_PHRASES} from '../data/defaultPhrases.js';
 
-const generateId = () => {
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substr(2, 9);
-    return `${timestamp}-${random}`;
+const STORAGE_KEY = 'speakease_phrases';
+const INITIALIZED_FLAG_KEY = 'speakease_initialized';
+
+const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+const initializeDefaultPhrases = () => {
+    if (localStorage.getItem(INITIALIZED_FLAG_KEY)) {
+        return;
+    }
+
+    const phrases = [];
+    Object.entries(DEFAULT_PHRASES).forEach(([category, items]) => {
+        items.forEach((phrase) => {
+            phrases.push({
+                id: generateId(),
+                text: phrase.text,
+                category,
+                createdAt: Date.now(),
+            });
+        });
+    });
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(phrases));
+    localStorage.setItem(INITIALIZED_FLAG_KEY, 'true');
 };
 
 export const getPhrases = () => {
+    initializeDefaultPhrases();
+
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
-        return stored
-          ? JSON.parse(stored)
-          : [];
+        return stored ? JSON.parse(stored) : [];
     } catch (error) {
         console.error('Error reading phrases from localStorage:', error);
         return [];
