@@ -9,6 +9,7 @@ const styles = {
         justifyContent: 'center',
         py: '2rem',
         px: '1rem',
+        pb: '7rem',
     },
 };
 
