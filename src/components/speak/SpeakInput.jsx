@@ -2,6 +2,7 @@ import {useState} from "react";
 import {TextField, Button, Box} from "@mui/material";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import {speak} from "../../services/textToSpeech.service.js";
+import {getVoiceSettings} from "../../services/storage.service.js";
 
 const styles = {
     wrapper: {
@@ -19,7 +20,8 @@ export const SpeakInput = () => {
     const [text, setText] = useState("");
 
     const handleSpeak = () => {
-        speak(text);
+        const settings = getVoiceSettings();
+        speak(text, settings);
     };
 
     return (

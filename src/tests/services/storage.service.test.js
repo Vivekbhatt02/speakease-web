@@ -1,123 +1,60 @@
-import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
-import {getPhrases, savePhrase, updatePhrase, deletePhrase} from '../../services/storage.service';
+import {describe, it, expect, beforeEach, afterEach} from 'vitest';
+import {getVoiceSettings, saveVoiceSettings} from '../../services/storage.service';
 
-describe('storage.service', () => {
+describe('voice settings storage', () => {
     beforeEach(() => {
         localStorage.clear();
-        vi.clearAllMocks();
     });
 
     afterEach(() => {
         localStorage.clear();
     });
 
-    describe('getPhrases', () => {
-        it('returns empty array when localStorage is empty', () => {
-            const phrases = getPhrases();
-            expect(phrases).toEqual([]);
+    describe('getVoiceSettings', () => {
+        it('returns default settings when localStorage is empty', () => {
+            const settings = getVoiceSettings();
+            expect(settings).toEqual({rate: 1, pitch: 1});
         });
 
-        it('returns parsed phrases array from localStorage', () => {
-            const mockPhrase = {id: '123', text: 'Hello', createdAt: 1000};
-            localStorage.setItem('speakease_phrases', JSON.stringify([mockPhrase]));
+        it('returns saved settings from localStorage', () => {
+            const customSettings = {rate: 1.5, pitch: 0.8};
+            localStorage.setItem('speakease_voice_settings', JSON.stringify(customSettings));
 
-            const phrases = getPhrases();
-            expect(phrases).toEqual([mockPhrase]);
+            const settings = getVoiceSettings();
+            expect(settings).toEqual(customSettings);
         });
 
         it('handles JSON parse errors gracefully', () => {
-            localStorage.setItem('speakease_phrases', 'invalid json');
-            const phrases = getPhrases();
-            expect(phrases).toEqual([]);
+            localStorage.setItem('speakease_voice_settings', 'invalid json');
+            const settings = getVoiceSettings();
+            expect(settings).toEqual({rate: 1, pitch: 1});
         });
     });
 
-    describe('savePhrase', () => {
-        it('saves phrase to localStorage with generated ID', () => {
-            const text = 'Hello, world!';
-            const result = savePhrase(text);
+    describe('saveVoiceSettings', () => {
+        it('saves settings to localStorage', () => {
+            const settings = {rate: 1.2, pitch: 1.3};
+            const result = saveVoiceSettings(settings);
 
-            expect(result).toBeDefined();
-            expect(result.id).toBeDefined();
-            expect(result.text).toBe(text);
-            expect(result.createdAt).toBeDefined();
+            expect(result).toEqual(settings);
+            const stored = JSON.parse(localStorage.getItem('speakease_voice_settings'));
+            expect(stored).toEqual(settings);
         });
 
-        it('adds phrase to existing phrases array', () => {
-            const phrase1 = savePhrase('First phrase');
-            const phrase2 = savePhrase('Second phrase');
+        it('overwrites existing settings', () => {
+            saveVoiceSettings({rate: 1.0, pitch: 1.0});
+            saveVoiceSettings({rate: 2.0, pitch: 0.5});
 
-            const phrases = getPhrases();
-            expect(phrases).toHaveLength(2);
-            expect(phrases[0]).toEqual(phrase1);
-            expect(phrases[1]).toEqual(phrase2);
+            const settings = getVoiceSettings();
+            expect(settings).toEqual({rate: 2.0, pitch: 0.5});
         });
 
-        it('returns the saved phrase object with correct properties', () => {
-            const result = savePhrase('Test phrase');
+        it('persists settings across calls', () => {
+            const settings1 = {rate: 1.5, pitch: 0.8};
+            saveVoiceSettings(settings1);
 
-            expect(result).toHaveProperty('id');
-            expect(result).toHaveProperty('text', 'Test phrase');
-            expect(result).toHaveProperty('createdAt');
-            expect(typeof result.id).toBe('string');
-            expect(typeof result.createdAt).toBe('number');
-        });
-    });
-
-    describe('updatePhrase', () => {
-        it('updates phrase text by ID', () => {
-            const phrase = savePhrase('Original text');
-            const updated = updatePhrase(phrase.id, 'Updated text');
-
-            expect(updated.text).toBe('Updated text');
-            expect(getPhrases()).toContainEqual(updated);
-        });
-
-        it('returns null when phrase ID not found', () => {
-            const result = updatePhrase('nonexistent-id', 'New text');
-            expect(result).toBeNull();
-        });
-
-        it('preserves other phrases when updating', () => {
-            const phrase1 = savePhrase('Phrase 1');
-            const phrase2 = savePhrase('Phrase 2');
-
-            updatePhrase(phrase1.id, 'Updated phrase 1');
-
-            const phrases = getPhrases();
-            expect(phrases).toHaveLength(2);
-            expect(phrases[1]).toEqual(phrase2);
-        });
-    });
-
-    describe('deletePhrase', () => {
-        it('removes phrase by ID from localStorage', () => {
-            const phrase = savePhrase('To delete');
-            const success = deletePhrase(phrase.id);
-
-            expect(success).toBe(true);
-            expect(getPhrases()).toEqual([]);
-        });
-
-        it('returns false when phrase ID not found', () => {
-            const result = deletePhrase('nonexistent-id');
-            expect(result).toBe(false);
-        });
-
-        it('returns true on successful deletion', () => {
-            const phrase = savePhrase('Delete me');
-            const result = deletePhrase(phrase.id);
-            expect(result).toBe(true);
-        });
-
-        it('preserves other phrases when deleting', () => {
-            const phrase1 = savePhrase('Keep this');
-            const phrase2 = savePhrase('Delete this');
-
-            deletePhrase(phrase2.id);
-
-            const phrases = getPhrases();
-            expect(phrases).toEqual([phrase1]);
+            const retrievedSettings = getVoiceSettings();
+            expect(retrievedSettings).toEqual(settings1);
         });
     });
 });

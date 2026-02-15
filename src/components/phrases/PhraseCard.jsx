@@ -5,6 +5,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {speak} from '../../services/textToSpeech.service.js';
+import {getVoiceSettings} from '../../services/storage.service.js';
 
 const styles = {
     card: {
@@ -48,7 +49,8 @@ export const PhraseCard = ({phrase, onEdit, onDelete}) => {
     const [editText, setEditText] = useState(phrase.text);
 
     const handleSpeak = () => {
-        speak(phrase.text);
+        const settings = getVoiceSettings();
+        speak(phrase.text, settings);
     };
 
     const handleEditClick = () => {

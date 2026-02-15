@@ -33,4 +33,32 @@ describe('textToSpeech.service', () => {
         speak('hello');
         expect(mockSpeak).toHaveBeenCalledWith(mockUtterance);
     });
+
+    it('accepts custom rate configuration', () => {
+        speak('hello', {rate: 1.5});
+        expect(mockUtterance.rate).toBe(1.5);
+    });
+
+    it('accepts custom pitch configuration', () => {
+        speak('hello', {pitch: 0.8});
+        expect(mockUtterance.pitch).toBe(0.8);
+    });
+
+    it('accepts both rate and pitch configuration', () => {
+        speak('hello', {rate: 1.2, pitch: 1.3});
+        expect(mockUtterance.rate).toBe(1.2);
+        expect(mockUtterance.pitch).toBe(1.3);
+    });
+
+    it('uses default values when no config provided', () => {
+        speak('hello');
+        expect(mockUtterance.rate).toBe(1);
+        expect(mockUtterance.pitch).toBe(1);
+    });
+
+    it('uses default values for missing config properties', () => {
+        speak('hello', {rate: 1.5});
+        expect(mockUtterance.rate).toBe(1.5);
+        expect(mockUtterance.pitch).toBe(1);
+    });
 });
