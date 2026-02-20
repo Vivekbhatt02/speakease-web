@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {TextField, Button, Box, Typography} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import {getPhrases, savePhrase, updatePhrase, deletePhrase} from '../../services/storage.service.js';
+import {DEFAULT_PHRASES} from '../../data/defaultPhrases.js';
 import {PageContainer} from '../PageContainer';
 import {PhraseCard} from './PhraseCard';
 
@@ -35,6 +36,24 @@ const styles = {
     addButton: {
         py: '0.75rem',
     },
+    categoriesContainer: {
+        mb: '1.5rem',
+    },
+    categorySection: {
+        mb: '2rem',
+    },
+    categoryHeader: {
+        mb: '1rem',
+        fontWeight: 600,
+        color: 'primary.main',
+        fontSize: '1rem',
+    },
+    customPhrasesHeader: {
+        mt: '2rem',
+        mb: '1rem',
+        fontWeight: 600,
+        color: 'text.primary',
+    },
     phrasesList: {
         width: '100%',
         display: 'flex',
@@ -51,6 +70,10 @@ const styles = {
 export const SavedPhrasesPage = () => {
     const [phrases, setPhrases] = useState(() => getPhrases());
     const [newPhraseText, setNewPhraseText] = useState('');
+
+    const categories = Object.keys(DEFAULT_PHRASES);
+    const defaultPhrases = phrases.filter((p) => p.category);
+    const customPhrases = phrases.filter((p) => !p.category);
 
     const handleSavePhrase = () => {
         if (!newPhraseText.trim()) return;
@@ -74,6 +97,28 @@ export const SavedPhrasesPage = () => {
         if (updated) {
             setPhrases(phrases.map((p) => (p.id === id ? updated : p)));
         }
+    };
+
+    const renderCategorySection = (category) => {
+        const phrasesInCategory = defaultPhrases.filter((p) => p.category === category);
+        if (phrasesInCategory.length === 0) return null;
+
+        return (
+          <Box key={category} sx={styles.categorySection}>
+              <Typography sx={styles.categoryHeader}>
+                  {category}
+              </Typography>
+              <Box sx={styles.phrasesList}>
+                  {phrasesInCategory.map((phrase) => (
+                    <PhraseCard
+                      key={phrase.id}
+                      phrase={phrase}
+                      onEdit={handleEditPhrase}
+                      onDelete={handleDeletePhrase}/>
+                  ))}
+              </Box>
+          </Box>
+        );
     };
 
     return (
@@ -117,14 +162,29 @@ export const SavedPhrasesPage = () => {
             )
             :
             (
-              <Box sx={styles.phrasesList}>
-                  {phrases.map((phrase) => (
-                    <PhraseCard
-                      key={phrase.id}
-                      phrase={phrase}
-                      onEdit={handleEditPhrase}
-                      onDelete={handleDeletePhrase}/>
-                  ))}
+              <Box>
+                  {defaultPhrases.length > 0 && (
+                    <Box sx={styles.categoriesContainer}>
+                        {categories.map((category) => renderCategorySection(category))}
+                    </Box>
+                  )}
+
+                  {customPhrases.length > 0 && (
+                    <>
+                        <Typography sx={styles.customPhrasesHeader}>
+                            My Phrases
+                        </Typography>
+                        <Box sx={styles.phrasesList}>
+                            {customPhrases.map((phrase) => (
+                              <PhraseCard
+                                key={phrase.id}
+                                phrase={phrase}
+                                onEdit={handleEditPhrase}
+                                onDelete={handleDeletePhrase}/>
+                            ))}
+                        </Box>
+                    </>
+                  )}
               </Box>
             )
           }

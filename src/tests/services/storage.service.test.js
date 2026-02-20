@@ -12,14 +12,15 @@ describe('storage.service', () => {
     });
 
     describe('getPhrases', () => {
-        it('returns empty array when localStorage is empty', () => {
+        it('initializes default phrases on first call', () => {
             const phrases = getPhrases();
-            expect(phrases).toEqual([]);
+            expect(phrases.length).toBeGreaterThan(0);
         });
 
         it('returns parsed phrases array from localStorage', () => {
             const mockPhrase = {id: '123', text: 'Hello', createdAt: 1000};
             localStorage.setItem('speakease_phrases', JSON.stringify([mockPhrase]));
+            localStorage.setItem('speakease_initialized', 'true');
 
             const phrases = getPhrases();
             expect(phrases).toEqual([mockPhrase]);
@@ -27,6 +28,7 @@ describe('storage.service', () => {
 
         it('handles JSON parse errors gracefully', () => {
             localStorage.setItem('speakease_phrases', 'invalid json');
+            localStorage.setItem('speakease_initialized', 'true');
             const phrases = getPhrases();
             expect(phrases).toEqual([]);
         });
@@ -44,13 +46,14 @@ describe('storage.service', () => {
         });
 
         it('adds phrase to existing phrases array', () => {
+            const initialCount = getPhrases().length;
             const phrase1 = savePhrase('First phrase');
             const phrase2 = savePhrase('Second phrase');
 
             const phrases = getPhrases();
-            expect(phrases).toHaveLength(2);
-            expect(phrases[0]).toEqual(phrase1);
-            expect(phrases[1]).toEqual(phrase2);
+            expect(phrases).toHaveLength(initialCount + 2);
+            expect(phrases[initialCount]).toEqual(phrase1);
+            expect(phrases[initialCount + 1]).toEqual(phrase2);
         });
 
         it('returns the saved phrase object with correct properties', () => {
@@ -79,14 +82,15 @@ describe('storage.service', () => {
         });
 
         it('preserves other phrases when updating', () => {
+            const initialCount = getPhrases().length;
             const phrase1 = savePhrase('Phrase 1');
             const phrase2 = savePhrase('Phrase 2');
 
             updatePhrase(phrase1.id, 'Updated phrase 1');
 
             const phrases = getPhrases();
-            expect(phrases).toHaveLength(2);
-            expect(phrases[1]).toEqual(phrase2);
+            expect(phrases).toHaveLength(initialCount + 2);
+            expect(phrases[initialCount + 1]).toEqual(phrase2);
         });
     });
 
@@ -96,7 +100,8 @@ describe('storage.service', () => {
             const success = deletePhrase(phrase.id);
 
             expect(success).toBe(true);
-            expect(getPhrases()).toEqual([]);
+            const remaining = getPhrases();
+            expect(remaining.find((p) => p.text === 'To delete')).toBeUndefined();
         });
 
         it('returns false when phrase ID not found', () => {
@@ -111,13 +116,58 @@ describe('storage.service', () => {
         });
 
         it('preserves other phrases when deleting', () => {
+            const initialCount = getPhrases().length;
             const phrase1 = savePhrase('Keep this');
             const phrase2 = savePhrase('Delete this');
 
             deletePhrase(phrase2.id);
 
             const phrases = getPhrases();
-            expect(phrases).toEqual([phrase1]);
+            expect(phrases).toHaveLength(initialCount + 1);
+            expect(phrases.find((p) => p.id === phrase1.id)).toEqual(phrase1);
+            expect(phrases.find((p) => p.id === phrase2.id)).toBeUndefined();
         });
     });
+
+    describe('default phrases initialization', () => {
+        it('initializes default phrases on first getPhrases call', () => {
+            const phrases = getPhrases();
+            expect(phrases.length).toBeGreaterThan(0);
+            expect(phrases[0]).toHaveProperty('id');
+            expect(phrases[0]).toHaveProperty('text');
+            expect(phrases[0]).toHaveProperty('createdAt');
+            expect(phrases[0]).toHaveProperty('category');
+        });
+
+        it('does not re-initialize if already initialized', () => {
+            const phrases1 = getPhrases();
+            const initialLength = phrases1.length;
+
+            // Add custom phrase
+            savePhrase('My custom phrase');
+
+            const phrases2 = getPhrases();
+            expect(phrases2.length).toBe(initialLength + 1);
+        });
+
+        it('includes medical phrases', () => {
+            const phrases = getPhrases();
+            const medicalPhrase = phrases.find((p) => p.text.includes('medication'));
+            expect(medicalPhrase).toBeDefined();
+        });
+
+        it('includes daily phrases', () => {
+            const phrases = getPhrases();
+            const dailyPhrase = phrases.find((p) => p.text === 'Thank you');
+            expect(dailyPhrase).toBeDefined();
+        });
+
+        it('includes emergency phrases', () => {
+            const phrases = getPhrases();
+            const emergencyPhrase = phrases.find((p) => p.text.includes('911'));
+            expect(emergencyPhrase).toBeDefined();
+        });
+    });
+
 });
+

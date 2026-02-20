@@ -110,12 +110,16 @@ http://localhost:5173
 
 ## 🛣️ Roadmap
 
-* [ ] Saved phrases (medical, daily, emergency)
+* [x] **Step 1**: Core app structure with MUI theme and routing
+* [x] **Step 2**: Saved phrases with localStorage
+* [x] **Step 3**: PWA support (offline capability)
+* [x] **Step 4**: Default phrases with category headers (Medical, Daily, Emergency)
 * [ ] Voice speed & pitch controls
-* [ ] Conversation mode
+* [ ] Conversation mode (phrase history)
 * [ ] Multi-language support
 * [ ] Android native app integration
 * [ ] Caregiver / quick-access mode
+* [ ] Cloud sync (cross-device)
 
 ---
 
@@ -130,12 +134,6 @@ If you have ideas related to:
 * Performance optimizations
 
 Feel free to open an issue or submit a pull request.
-
----
-
-## 📜 License
-
-This project is licensed under the **MIT License** — free to use, modify, and distribute.
 
 ---
 
