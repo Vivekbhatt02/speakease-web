@@ -30,14 +30,8 @@ const styles = {
         gap: '1rem',
         width: '100%',
     },
-    input: {
-        flex: 1,
-    },
     addButton: {
         py: '0.75rem',
-    },
-    categoriesContainer: {
-        mb: '1.5rem',
     },
     categorySection: {
         mb: '2rem',
@@ -47,12 +41,6 @@ const styles = {
         fontWeight: 600,
         color: 'primary.main',
         fontSize: '1rem',
-    },
-    customPhrasesHeader: {
-        mt: '2rem',
-        mb: '1rem',
-        fontWeight: 600,
-        color: 'text.primary',
     },
     phrasesList: {
         width: '100%',
@@ -64,6 +52,15 @@ const styles = {
         textAlign: 'center',
         py: '3rem',
         color: 'text.secondary',
+    },
+    categoriesContainer: {
+        mb: '1.5rem',
+    },
+    customPhrasesHeader: {
+        mt: '2rem',
+        mb: '1rem',
+        fontWeight: 600,
+        color: 'text.primary',
     },
 };
 
@@ -139,7 +136,6 @@ export const SavedPhrasesPage = () => {
                     multiline
                     maxRows={3}
                     fullWidth
-                    sx={styles.input}
                     aria-label="New phrase input"/>
                   <Button
                     variant="contained"
